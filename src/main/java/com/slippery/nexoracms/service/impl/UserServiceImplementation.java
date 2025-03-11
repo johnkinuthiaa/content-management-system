@@ -4,7 +4,6 @@ import com.slippery.nexoracms.dto.UserDto;
 import com.slippery.nexoracms.models.User;
 import com.slippery.nexoracms.repository.UserRepository;
 import com.slippery.nexoracms.service.UserService;
-import org.springframework.boot.autoconfigure.session.RedisSessionProperties;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
