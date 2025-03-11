@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexora cms</title>
+</head>
+<body>
+<div>this is the body of the cms</div>
+<script type="module">
+    let health =document.getElementById("health-indicator")
+    const getHealth =(async ()=>{
+        const response =await fetch("http://localhost:8080/actuator/health")
+        const data =await response.json()
+        health.innerHTML +=data?.status
+    })
+    getHealth()
+</script>
+<h2>Health and status</h2>
+<p id="health-indicator"></p>
+</body>
+</html>
