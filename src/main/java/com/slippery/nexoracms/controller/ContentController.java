@@ -17,8 +17,8 @@ public class ContentController {
         this.contentService = contentService;
     }
     @PostMapping("/create/blog/{userId}")
-    public ResponseEntity<ContentDto> createNewContent(@RequestBody Content content, @PathVariable Long userId) {
-        var createdBlog =contentService.createNewContent(content, userId);
+    public ResponseEntity<ContentDto> createNewContent(@RequestBody Content content, @PathVariable Long userId,@RequestParam String category) {
+        var createdBlog =contentService.createNewContent(content, userId,category);
         if(createdBlog.getStatusCode() !=201){
             return ResponseEntity.status(createdBlog.getStatusCode()).body(createdBlog);
         }

@@ -36,16 +36,17 @@ public class CategoryServiceImplementation implements CategoryService {
         }
         category.setContentInCategory(new ArrayList<>());
         categoryRepository.save(category);
-        response.setMessage("new category "+category+" created");
+        response.setMessage("new category "+category.getName()+" created");
         response.setStatusCode(201);
         response.setCategory(category);
         return response;
     }
 
     @Override
-    public CategoryDto updateCategory(Long userId, Category category) {
+    public CategoryDto updateCategory(Category category) {
         return null;
     }
+
 
     @Override
     public CategoryDto findCategoryById(Long categoryId) {
@@ -78,7 +79,7 @@ public class CategoryServiceImplementation implements CategoryService {
     }
 
     @Override
-    public CategoryDto deleteCategoryById(Long userId, Long categoryId) {
+    public CategoryDto deleteCategoryById(Long categoryId) {
         return null;
     }
 }

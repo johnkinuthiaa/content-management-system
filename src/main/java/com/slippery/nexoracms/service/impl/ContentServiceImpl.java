@@ -2,6 +2,7 @@ package com.slippery.nexoracms.service.impl;
 
 import com.slippery.nexoracms.dto.ContentDto;
 import com.slippery.nexoracms.models.Content;
+import com.slippery.nexoracms.repository.CategoryRepository;
 import com.slippery.nexoracms.repository.ContentRepository;
 import com.slippery.nexoracms.repository.UserRepository;
 import com.slippery.nexoracms.service.ContentService;
@@ -16,21 +17,27 @@ public class ContentServiceImpl implements ContentService {
     private final ContentRepository repository;
     private final UserService userService;
     private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
 
-    public ContentServiceImpl(ContentRepository repository, UserService userService, UserRepository userRepository) {
+    public ContentServiceImpl(ContentRepository repository, UserService userService, UserRepository userRepository, CategoryRepository categoryRepository) {
         this.repository = repository;
         this.userService = userService;
         this.userRepository = userRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     @Override
-    public ContentDto createNewContent(Content content, Long userId) {
+    public ContentDto createNewContent(Content content, Long userId,String category) {
         ContentDto response =new ContentDto();
-        if(content.getBody() ==null || content.getBody().isEmpty()
-                ||content.getTitle() ==null||content.getTitle().isEmpty()
-                ||content.getStatus()==null||content.getStatus().isEmpty()
+
+        if(content.getBody() == null || content.getBody().isEmpty()
+                || content.getTitle() == null || content.getTitle().isEmpty()
+                || content.getStatus() == null || content.getStatus().isEmpty()
+                || category ==null||category.isEmpty()
         ){
             response.setMessage("Cannot create content due to missing credentials");
+            response.setStatusCode(300);
+            return response;
         }
         var existingUser =userService.findById(userId);
         if(existingUser.getStatusCode() !=200){
@@ -38,12 +45,27 @@ public class ContentServiceImpl implements ContentService {
             response.setStatusCode(existingUser.getStatusCode());
             return response;
         }
+
+        var existingCategory =categoryRepository.findByName(category.strip());
+        if(existingCategory ==null){
+            response.setMessage("Category with the name"+ category+" does not exist");
+            response.setStatusCode(404);
+            return response;
+        }
+
         var blogs =existingUser.getUser().getUserBlogs();
         content.setPublishedOn(LocalDateTime.now());
         content.setSlug(content.getTitle().toLowerCase().replace(" ","-"));
         content.setAuthor(existingUser.getUser());
         content.setImagesInContent(new ArrayList<>());
+        content.setCategory(existingCategory);
         repository.save(content);
+
+        var contentsInCategory =existingCategory.getContentInCategory();
+        contentsInCategory.add(content);
+        existingCategory.setContentInCategory(contentsInCategory);
+        categoryRepository.save(existingCategory);
+
         blogs.add(content);
         existingUser.getUser().setUserBlogs(blogs);
         userRepository.save(existingUser.getUser());

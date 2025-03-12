@@ -24,6 +24,6 @@ public class User {
     private String email;
     private String role;
     private LocalDateTime createdOn =LocalDateTime.now();
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Content> userBlogs;
 }
