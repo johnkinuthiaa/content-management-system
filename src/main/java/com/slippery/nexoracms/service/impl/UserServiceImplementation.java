@@ -31,6 +31,8 @@ public class UserServiceImplementation implements UserService {
         UserDto response =new UserDto();
         var validUser =userValid(user);
         if(validUser.getStatusCode() !=200){
+            response.setMessage("user not created because"+validUser.getMessage());
+            response.setStatusCode(validUser.getStatusCode());
             return response;
         }
         user.setPassword(passwordEncoder.encode(user.getPassword().strip()));
@@ -47,7 +49,7 @@ public class UserServiceImplementation implements UserService {
     @Override
     public UserDto login(User user) {
         UserDto response =new UserDto();
-        Pattern pattern =Pattern.compile("\\\\b[\\\\w.%-]+@[-.\\\\w]+\\\\.[A-Za-z]{2,4}\\\\b");
+        Pattern pattern =Pattern.compile("^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$");
         if(user.getPassword() ==null || user.getPassword().isEmpty()
                 ||user.getEmail() ==null || user.getEmail().isEmpty())
         {
@@ -128,27 +130,48 @@ public class UserServiceImplementation implements UserService {
     }
     public UserDto userValid(User user){
         UserDto response =new UserDto();
-        Pattern pattern =Pattern.compile("\\\\b[\\\\w.%-]+@[-.\\\\w]+\\\\.[A-Za-z]{2,4}\\\\b");
-        if(user.getPassword() ==null || user.getPassword().isEmpty()
-                ||user.getRole() ==null || user.getRole().isEmpty()
-                ||user.getUsername() ==null || user.getUsername().isEmpty()
-                ||user.getEmail() ==null || user.getEmail().isEmpty())
-        {
-            response.setMessage("Not logged in because login credentials are missing");
+        Pattern pattern =Pattern.compile("^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$");
+        Optional<User> existingUserByUsername = Optional.ofNullable(userRepository.findByUsername(user.getUsername()));
+        Optional<User> existingByEmail = Optional.ofNullable(userRepository.findByEmail(user.getEmail()));
+        if(existingByEmail.isPresent()){
+            response.setMessage("User with that email already exists");
             response.setStatusCode(401);
             return response;
         }
-
-        if(!pattern.matcher(user.getEmail().toLowerCase()).matches()){
-            response.setMessage("Email is not valid");
-            response.setStatusCode(300);
+        if( existingUserByUsername.isPresent()){
+            response.setMessage("User with that username already exists");
+            response.setStatusCode(401);
             return response;
         }
-        Pattern usernamePattern =Pattern.compile("^[a-zA-Z0-9_-]{3,20}$");
-        if(!usernamePattern.matcher(user.getUsername()).matches()){
-            response.setMessage("Username should be less than 20 characters and more than 3 ");
-            response.setStatusCode(300);
-            return response;
+        try{
+            if(user.getPassword() ==null || user.getPassword().isEmpty()
+                    ||user.getRole() ==null || user.getRole().isEmpty()
+                    ||user.getUsername() ==null || user.getUsername().isEmpty()
+                    ||user.getEmail() ==null || user.getEmail().isEmpty())
+            {
+                response.setMessage("Some login credentials are missing");
+                response.setStatusCode(401);
+                return response;
+            }
+
+            if(!pattern.matcher(user.getEmail().toLowerCase()).matches()){
+                response.setMessage("Email is not valid");
+                response.setStatusCode(300);
+                return response;
+            }
+            Pattern usernamePattern =Pattern.compile("^[a-zA-Z0-9_-]{3,20}$");
+            if(!usernamePattern.matcher(user.getUsername()).matches()){
+                response.setMessage("Username should be less than 20 characters and more than 3 ");
+                response.setStatusCode(300);
+                return response;
+            }
+            if(!usernamePattern.matcher(user.getPassword()).matches()){
+                response.setMessage("Passwords should be less than 20 characters and more than 6");
+                response.setStatusCode(300);
+                return response;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
         response.setStatusCode(200);
         response.setMessage("User is valid");
