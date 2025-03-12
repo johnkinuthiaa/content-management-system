@@ -4,6 +4,7 @@ import com.slippery.nexoracms.dto.UserDto;
 import com.slippery.nexoracms.models.User;
 import com.slippery.nexoracms.repository.UserRepository;
 import com.slippery.nexoracms.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Service
 public class UserServiceImplementation implements UserService {
     private final UserRepository userRepository;
@@ -49,7 +51,6 @@ public class UserServiceImplementation implements UserService {
     @Override
     public UserDto login(User user) {
         UserDto response =new UserDto();
-        Pattern pattern =Pattern.compile("^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$");
         if(user.getPassword() ==null || user.getPassword().isEmpty()
                 ||user.getEmail() ==null || user.getEmail().isEmpty())
         {
@@ -57,7 +58,7 @@ public class UserServiceImplementation implements UserService {
             response.setStatusCode(401);
             return response;
         }
-
+        Pattern pattern =Pattern.compile("^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$");
         if(!pattern.matcher(user.getEmail().toLowerCase()).matches()){
             response.setMessage("Email is not valid");
             response.setStatusCode(300);
@@ -69,16 +70,19 @@ public class UserServiceImplementation implements UserService {
             response.setStatusCode(401);
             return response;
         }
-        Authentication authentication =authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                username,user.getPassword()
-        ));
-        if(authentication.isAuthenticated()){
-            response.setMessage("User authenticated successfully");
-            response.setStatusCode(200);
-            return response;
+        try {
+            Authentication authentication =authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                    username,user.getPassword()
+            ));
+            if(authentication.isAuthenticated()){
+                response.setMessage("User authenticated successfully");
+                response.setStatusCode(200);
+                return response;
+            }
+        } catch (Exception e) {
+            response.setMessage("failed to authenticate user because: "+e.getLocalizedMessage());
+            response.setStatusCode(401);
         }
-        response.setMessage("failed to authenticate user");
-        response.setStatusCode(401);
         return response;
     }
 
