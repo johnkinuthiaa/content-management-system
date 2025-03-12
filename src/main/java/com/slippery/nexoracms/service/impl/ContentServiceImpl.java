@@ -102,17 +102,24 @@ public class ContentServiceImpl implements ContentService {
             response.setStatusCode(user.getStatusCode());
             return response;
         }
-        if(!user.getUser().getId().equals(content.getContent().getId())){
+
+        if(!user.getUser().getId().equals(content.getContent().getAuthor().getId())){
             response.setMessage("Blog does not belong to the user");
             response.setStatusCode(401);
             return response;
         }
+
         var blogs = user.getUser().getUserBlogs();
-        content.getContent().setAuthor(null);
-        repository.delete(content.getContent());
         blogs.remove(content.getContent());
         user.getUser().setUserBlogs(blogs);
+        content.getContent().setAuthor(null);
+        var category =content.getContent().getCategory();
+        var itemsInCategory =category.getContentInCategory();
+        itemsInCategory.remove(content.getContent());
+        category.setContentInCategory(itemsInCategory);
+        categoryRepository.save(category);
         userRepository.save(user.getUser());
+        repository.delete(content.getContent());
         response.setMessage("BLOG deleted");
         response.setStatusCode(200);
 

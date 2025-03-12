@@ -1,5 +1,7 @@
 package com.slippery.nexoracms.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,5 +27,6 @@ public class User {
     private String role;
     private LocalDateTime createdOn =LocalDateTime.now();
     @OneToMany(cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Content> userBlogs;
 }

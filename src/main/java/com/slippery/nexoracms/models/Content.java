@@ -1,5 +1,7 @@
 package com.slippery.nexoracms.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,6 +31,7 @@ public class Content {
     private String status;
     @ManyToOne
     @JoinColumn(name = "category_id")
+    @JsonIgnore
     private Category category;
     @OneToMany(cascade = CascadeType.ALL)
     private List<Media> imagesInContent;

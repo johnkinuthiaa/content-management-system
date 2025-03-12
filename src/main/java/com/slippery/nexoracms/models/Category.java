@@ -1,5 +1,7 @@
 package com.slippery.nexoracms.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,5 +23,6 @@ public class Category {
     private String name;
     private String description;
     @OneToMany(cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Content> contentInCategory;
 }
