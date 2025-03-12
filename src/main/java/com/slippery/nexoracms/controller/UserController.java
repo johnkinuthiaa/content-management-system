@@ -4,6 +4,7 @@ import com.slippery.nexoracms.dto.UserDto;
 import com.slippery.nexoracms.models.User;
 import com.slippery.nexoracms.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class UserController{
         if(newUser.getStatusCode() !=201){
             return ResponseEntity.status(newUser.getStatusCode()).body(newUser);
         }
-        return ResponseEntity.status(HttpStatusCode.valueOf(201)).body(newUser);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
     }
     @PutMapping("/login")
     public ResponseEntity<UserDto> login(@RequestBody User user) {
@@ -31,7 +32,7 @@ public class UserController{
         if(loggedInUser.getStatusCode() !=200){
             return ResponseEntity.status(loggedInUser.getStatusCode()).body(loggedInUser);
         }
-        return ResponseEntity.ok(loggedInUser);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(loggedInUser);
     }
     @GetMapping("/{userId}/get")
     public ResponseEntity<UserDto> findById(@PathVariable Long userId) {
@@ -39,7 +40,7 @@ public class UserController{
         if(user.getStatusCode() !=200){
             return ResponseEntity.status(user.getStatusCode()).body(user);
         }
-        return ResponseEntity.ok(user);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(user);
     }
     @DeleteMapping("/{userId}/delete")
     public ResponseEntity<UserDto> deleteById(@PathVariable Long userId) {
@@ -47,7 +48,7 @@ public class UserController{
         if(deleteUser.getStatusCode() !=200){
             return ResponseEntity.status(deleteUser.getStatusCode()).body(deleteUser);
         }
-        return ResponseEntity.ok(deleteUser);
+        return ResponseEntity.status(HttpStatus.OK).body(deleteUser);
     }
     @GetMapping("/{userId}/blogs")
     public ResponseEntity<UserDto> getAllBlogsByUser(@PathVariable Long userId) {
