@@ -6,6 +6,7 @@ import com.slippery.nexoracms.repository.CategoryRepository;
 import com.slippery.nexoracms.service.CategoryService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 @Service
@@ -33,6 +34,7 @@ public class CategoryServiceImplementation implements CategoryService {
             response.setStatusCode(300);
             return response;
         }
+        category.setContentInCategory(new ArrayList<>());
         categoryRepository.save(category);
         response.setMessage("new category "+category+" created");
         response.setStatusCode(201);
@@ -62,7 +64,17 @@ public class CategoryServiceImplementation implements CategoryService {
 
     @Override
     public CategoryDto findAllCategories() {
-        return null;
+        CategoryDto response =new CategoryDto();
+        var allCategories =categoryRepository.findAll();
+        if(allCategories.isEmpty()){
+            response.setMessage("Category list is empty");
+            response.setStatusCode(404);
+            return response;
+        }
+        response.setMessage("All categories available");
+        response.setStatusCode(200);
+        response.setCategoryList(allCategories);
+        return response;
     }
 
     @Override

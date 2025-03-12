@@ -21,4 +21,5 @@ public class Media {
     private String fileType;
     @Lob
     private Byte[] fileData;
+
 }

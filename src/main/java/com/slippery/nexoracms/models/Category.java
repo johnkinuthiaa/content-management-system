@@ -20,6 +20,6 @@ public class Category {
     private Long id;
     private String name;
     private String description;
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Content> contentInCategory;
 }

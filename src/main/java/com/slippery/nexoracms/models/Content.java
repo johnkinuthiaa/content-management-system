@@ -30,4 +30,6 @@ public class Content {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<Media> imagesInContent;
 }
