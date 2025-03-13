@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/content")
+@CrossOrigin
 public class ContentController {
     private final ContentService contentService;
 
