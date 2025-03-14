@@ -1,17 +1,22 @@
 package com.slippery.nexoracms.service.impl;
 
 import com.slippery.nexoracms.dto.ContentDto;
+import com.slippery.nexoracms.dto.MediaDto;
 import com.slippery.nexoracms.models.Content;
+import com.slippery.nexoracms.models.Media;
 import com.slippery.nexoracms.repository.CategoryRepository;
 import com.slippery.nexoracms.repository.ContentRepository;
 import com.slippery.nexoracms.repository.UserRepository;
 import com.slippery.nexoracms.service.ContentService;
 import com.slippery.nexoracms.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
+@Slf4j
 @Service
 public class ContentServiceImpl implements ContentService {
     private final ContentRepository repository;
@@ -27,51 +32,22 @@ public class ContentServiceImpl implements ContentService {
     }
 
     @Override
-    public ContentDto createNewContent(Content content, Long userId,String category) {
-        ContentDto response =new ContentDto();
-
-        if(content.getBody() == null || content.getBody().isEmpty()
-                || content.getTitle() == null || content.getTitle().isEmpty()
-                || content.getStatus() == null || content.getStatus().isEmpty()
-                || category ==null||category.isEmpty()
-        ){
-            response.setMessage("Cannot create content due to missing credentials");
-            response.setStatusCode(300);
-            return response;
+    public ContentDto createNewContent(MultipartFile image,Content content, Long userId,String category) {
+        try{
+            if(image ==null||image.isEmpty()){
+                content.setImagesInContent(null);
+            }else{
+                Media media =new Media();
+                media.setFileData(image.getBytes());
+                media.setFileName(image.getOriginalFilename());
+                media.setFileType(image.getContentType());
+                content.setImagesInContent(media);
+            }
+        } catch (Exception e) {
+            log.warn("warning {}",e.getLocalizedMessage());
         }
-        var existingUser =userService.findById(userId);
-        if(existingUser.getStatusCode() !=200){
-            response.setMessage(existingUser.getMessage());
-            response.setStatusCode(existingUser.getStatusCode());
-            return response;
-        }
+        return validContent(content, userId, category);
 
-        var existingCategory =categoryRepository.findByName(category.strip());
-        if(existingCategory ==null){
-            response.setMessage("Category with the name"+ category+" does not exist");
-            response.setStatusCode(404);
-            return response;
-        }
-
-        var blogs =existingUser.getUser().getUserBlogs();
-        content.setPublishedOn(LocalDateTime.now());
-        content.setSlug(content.getTitle().toLowerCase().replace(" ","-"));
-        content.setAuthor(existingUser.getUser());
-        content.setImagesInContent(new ArrayList<>());
-        content.setCategory(existingCategory);
-        repository.save(content);
-
-        var contentsInCategory =existingCategory.getContentInCategory();
-        contentsInCategory.add(content);
-        existingCategory.setContentInCategory(contentsInCategory);
-        categoryRepository.save(existingCategory);
-
-        blogs.add(content);
-        existingUser.getUser().setUserBlogs(blogs);
-        userRepository.save(existingUser.getUser());
-        response.setMessage("New blog created");
-        response.setStatusCode(201);
-        return response;
     }
 
     @Override
@@ -160,5 +136,56 @@ public class ContentServiceImpl implements ContentService {
     @Override
     public ContentDto updateContent(Content content, Long userId, Long contentId) {
         return null;
+    }
+
+    @Override
+    public ContentDto createNewContentWithoutImage(Content content, Long userId, String category) {
+        content.setImagesInContent(null);
+        return validContent(content, userId, category);
+    }
+    public ContentDto validContent(Content content, Long userId, String category){
+        ContentDto response =new ContentDto();
+        if(content.getBody() == null || content.getBody().isEmpty()
+                || content.getTitle() == null || content.getTitle().isEmpty()
+                || content.getStatus() == null || content.getStatus().isEmpty()
+                || category ==null||category.isEmpty()
+        ){
+            response.setMessage("Cannot create content due to missing credentials");
+            response.setStatusCode(300);
+            return response;
+        }
+        var existingUser =userService.findById(userId);
+        if(existingUser.getStatusCode() !=200){
+            response.setMessage(existingUser.getMessage());
+            response.setStatusCode(existingUser.getStatusCode());
+            return response;
+        }
+
+        var existingCategory =categoryRepository.findByName(category.strip());
+        if(existingCategory ==null){
+            response.setMessage("Category with the name"+ category+" does not exist");
+            response.setStatusCode(404);
+            return response;
+        }
+
+        var blogs =existingUser.getUser().getUserBlogs();
+        content.setPublishedOn(LocalDateTime.now());
+        content.setSlug(content.getTitle().toLowerCase().replace(" ","-"));
+        content.setAuthor(existingUser.getUser());
+
+        content.setCategory(existingCategory);
+        repository.save(content);
+
+        var contentsInCategory =existingCategory.getContentInCategory();
+        contentsInCategory.add(content);
+        existingCategory.setContentInCategory(contentsInCategory);
+        categoryRepository.save(existingCategory);
+
+        blogs.add(content);
+        existingUser.getUser().setUserBlogs(blogs);
+        userRepository.save(existingUser.getUser());
+        response.setMessage("New blog created");
+        response.setStatusCode(201);
+        return response;
     }
 }

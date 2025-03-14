@@ -33,6 +33,6 @@ public class Content {
     @JoinColumn(name = "category_id")
     @JsonIgnore
     private Category category;
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<Media> imagesInContent;
+    @OneToOne(cascade = CascadeType.ALL)
+    private Media imagesInContent;
 }

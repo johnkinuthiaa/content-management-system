@@ -20,6 +20,5 @@ public class Media {
     private String fileName;
     private String fileType;
     @Lob
-    private Byte[] fileData;
-
+    private byte[] fileData;
 }

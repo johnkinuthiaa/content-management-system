@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/content")
@@ -18,8 +19,8 @@ public class ContentController {
         this.contentService = contentService;
     }
     @PostMapping("/create/blog/{userId}")
-    public ResponseEntity<ContentDto> createNewContent(@RequestBody Content content, @PathVariable Long userId,@RequestParam String category) {
-        var createdBlog =contentService.createNewContent(content, userId,category);
+    public ResponseEntity<ContentDto> createNewContent(@RequestPart MultipartFile image, @RequestPart Content content, @PathVariable Long userId, @RequestParam String category) {
+        var createdBlog =contentService.createNewContent(image,content, userId,category);
         if(createdBlog.getStatusCode() !=201){
             return ResponseEntity.status(createdBlog.getStatusCode()).body(createdBlog);
         }
@@ -58,5 +59,10 @@ public class ContentController {
     public ResponseEntity<ContentDto> updateContent(@RequestBody Content content,@RequestParam Long userId,@PathVariable Long contentId) {
         var updatedBlog =contentService.updateContent(content, userId, contentId);
         return ResponseEntity.status(HttpStatusCode.valueOf(updatedBlog.getStatusCode())).body(updatedBlog);
+    }
+    @PostMapping("/create/without-image/{userId}")
+    public ResponseEntity<ContentDto> createNewContentWithoutImage(@RequestBody Content content,@PathVariable Long userId,@RequestParam String category){
+        var createdBlog =contentService.createNewContentWithoutImage(content, userId, category);
+        return ResponseEntity.status(HttpStatusCode.valueOf(createdBlog.getStatusCode())).body(createdBlog);
     }
 }
